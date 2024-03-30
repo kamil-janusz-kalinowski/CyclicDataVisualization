@@ -1,3 +1,10 @@
+/**
+ * This script demonstrates colorizing grayscale images using different colormaps and creating animations from the colorized images.
+ * It includes functions for loading images, colorizing images, creating animations, and writing GIF files.
+ * The main function `main` showcases the usage of these functions by colorizing a grayscale image using different colormaps and plotting the results.
+ * It also creates animations from the colorized images using different colormaps.
+ */
+
 %clc; clear; close all;
 
 addpath("colormaps")
@@ -23,14 +30,11 @@ plotResults(img, img_colorized_bad, img_colorized_good);
 %% Create animation
 
 img = loadImg("vortex_phase1.png");
-createAnimation(img, mask, gray(256), 'anim_phase1_gray.gif', 6, 1);
-createAnimation(img, mask, jet(256), 'anim_phase1_jet.gif', 6, 1);
-createAnimation(img, mask, crameri('romaO'), 'anim_phase1_romaO.gif', 6, 1);
+createAnimations(img, mask, 'vortex_phase1');
+
 
 img = loadImg("vortex_phase2.png");
-createAnimation(img, mask, gray(256), 'anim_phase2_gray.gif', 6, 1);
-createAnimation(img, mask, jet(256), 'anim_phase2_jet.gif', 6, 1);
-createAnimation(img, mask, crameri('romaO'), 'anim_phase2_romaO.gif', 6, 1);
+createAnimations(img, mask, 'vortex_phase2');
 
 
 function img = loadImg(filename)
@@ -38,6 +42,12 @@ function img = loadImg(filename)
     
     img = im2double(img);
     img = uint8((img - min(img(:)))* 255/max(img(:)));
+end
+
+function createAnimations(img, mask, outputName)
+    createAnimation(img, mask, gray(256), [outputName '_phase1_gray.gif'], 6, 1);
+    createAnimation(img, mask, jet(256), [outputName '_phase1_jet.gif'], 6, 1);
+    createAnimation(img, mask, crameri('romaO'), [outputName '_phase1_romaO.gif'], 6, 1);
 end
 
 function color_image = colorizeImage(gray_image_uint8, mask, colormap)
