@@ -13,13 +13,16 @@ addpath("../materials")
 
 filename_img = "vortex_phase1.png";
 filename_mask = "vortex_mask.png";
-filename_amp = "vortex_amplitude.png";
+filename_amp = "img_amplitude2.png";
 
 img_phase = loadImg(filename_img);
-img_amp = loadImg(filename_amp);
+img_amp = double(loadImg(filename_amp));
 img_mask = loadImg(filename_mask);
 
-mask = img_mask ~= 0;
+img_amp = (img_amp/255).^2*100;
+
+%mask = img_mask ~= 0;
+mask = img_amp > 20;
 
 color_map = jet(256);
 img_colorized_bad = colorizeImage(img_phase, mask, color_map);
@@ -125,7 +128,7 @@ function grayImageToAnimation(data_img, data_gif)
     for ii = 1 : data_gif.num_of_frames
         colorImage = colorizeImageWithShift(data_img.img, -ii*data_gif.shift_speed, data_img.mask, data_img.colorMap);
 
-        colorImage = applyIntesivity(colorImage, data_img.img_amp);
+        colorImage = applyIntesivity(colorImage, data_img);
 
         writeGif(colorImage, data_gif.name_save_file, data_gif.delay_time);
 
@@ -172,9 +175,13 @@ function writeGif(colorImage, outputFileName, delayTime)
     end
 end
 
-function colorImage = applyIntesivity(colorImage, img_amp)
+function colorImage = applyIntesivity(colorImage, data_img)
     img_lab = rgb2lab(colorImage);
-    img_lab(:,:,1) = img_amp;
+    img_lab(:,:,1) = data_img.img_amp;
     colorImage = lab2rgb(img_lab);
+
+    colorImage(:,:,1) = colorImage(:,:,1) .* data_img.mask;
+    colorImage(:,:,2) = colorImage(:,:,2) .* data_img.mask;
+    colorImage(:,:,3) = colorImage(:,:,3) .* data_img.mask;
     
 end
