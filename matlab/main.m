@@ -4,12 +4,10 @@
 % The main function `main` showcases the usage of these functions by colorizing a grayscale image using different colormaps and plotting the results.
 %It also creates animations from the colorized images using different colormaps.
 
-%clc; clear; close all;
+clc; clear; close all;
 
 addpath("colormaps")
 addpath("../materials")
-
-%% Show results of colormaps
 
 filename_img = "vortex_phase1.png";
 filename_mask = "vortex_mask.png";
@@ -19,18 +17,22 @@ img_phase = loadImg(filename_img);
 img_amp = double(loadImg(filename_amp));
 img_mask = loadImg(filename_mask);
 
+% Preprocessing (contrast and adjust range to [0, 100])
 img_amp = (img_amp/255).^2*100;
+%img_amp(img_amp < 30) = 0;
 
 %mask = img_mask ~= 0;
-mask = img_amp > 20;
+mask = img_amp > 30;
 
-color_map = jet(256);
-img_colorized_bad = colorizeImage(img_phase, mask, color_map);
+%% Show results of colormaps
 
-color_map = crameri('romaO');
-img_colorized_good = colorizeImage(img_phase, mask, color_map);
-
-plotResults(img_phase, img_colorized_bad, img_colorized_good);
+% color_map = jet(256);
+% img_colorized_bad = colorizeImage(img_phase, mask, color_map);
+% 
+% color_map = crameri('romaO');
+% img_colorized_good = colorizeImage(img_phase, mask, color_map);
+% 
+% plotResults(img_phase, img_colorized_bad, img_colorized_good);
 
 %% Create animation
 
@@ -55,19 +57,21 @@ function img = loadImg(filename)
     img = uint8((img - min(img(:)))* 255/max(img(:)));
 end
 
-function createAnimations(img_phase, mask, outputName, img_amp)
-    createAnimation(img_phase, mask, gray(256), [outputName '_phase1_gray.gif'], 6, 1, img_amp);
-    createAnimation(img_phase, mask, jet(256), [outputName '_phase1_jet.gif'], 6, 1, img_amp);
-    createAnimation(img_phase, mask, crameri('romaO'), [outputName '_phase1_romaO.gif'], 6, 1, img_amp);
+function createAnimations(img_phase, mask, output_name, img_amp)
+    if nargin < 4
+        img_amp = [];
+    end
+
+    createAnimation(img_phase, mask, gray(256), [output_name '_phase1_gray.gif'], 6, 1, img_amp);
+    createAnimation(img_phase, mask, jet(256), [output_name '_phase1_jet.gif'], 6, 1, img_amp);
+    createAnimation(img_phase, mask, crameri('romaO'), [output_name '_phase1_romaO.gif'], 6, 1, img_amp);
 end
 
 function color_image = colorizeImage(gray_image_uint8, mask, colormap)
-    % Zdefiniuj kolorowe mapy (możesz je dostosować do swoich preferencji)
-
-    % Inicjalizuj obraz kolorowy
+    % Initialize the color image
     color_image = zeros(size(gray_image_uint8, 1), size(gray_image_uint8, 2), 3);
 
-    % Kolorowanie na podstawie intensywności piksela
+    % Colorization based on pixel intensity
     for yy = 1:size(gray_image_uint8, 1)
         for xx = 1:size(gray_image_uint8, 2)
 
@@ -127,8 +131,10 @@ function grayImageToAnimation(data_img, data_gif)
     h = waitbar(0,'Processing...');
     for ii = 1 : data_gif.num_of_frames
         colorImage = colorizeImageWithShift(data_img.img, -ii*data_gif.shift_speed, data_img.mask, data_img.colorMap);
-
-        colorImage = applyIntesivity(colorImage, data_img);
+        
+        if ~isempty(data_img.img_amp)
+            colorImage = applyIntesivity(colorImage, data_img);
+        end
 
         writeGif(colorImage, data_gif.name_save_file, data_gif.delay_time);
 
